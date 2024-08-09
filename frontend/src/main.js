@@ -2,7 +2,7 @@ import './style.css';
 import './app.css';
 
 import * as App from '../wailsjs/go/main/App';
-import { AddTask, GetTasks, RemoveTask } from '../wailsjs/go/main/App';
+import { AddTask, GetTasks, RemoveTask, ToggleTaskCompleted } from '../wailsjs/go/main/App';
 
 document.querySelector('#app').innerHTML = `
 <h1 class="todo-title">To-Do List</h1>
@@ -26,10 +26,12 @@ function renderTasks(tasks) {
         let taskItem = document.createElement('li');
         taskItem.className = 'todo-item';
         taskItem.innerHTML = `
-            ${task.task}
+            <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTaskCompleted(${task.id})">
+            <span class="${task.completed ? 'completed' : ''}">${task.task}</span>
             <button class="btn-remove" onclick="removeTask(${task.id})">Удалить</button>
         `;
-        taskListElement.appendChild(taskItem);
+        // Добавляем задачи в начало списка
+        taskListElement.insertBefore(taskItem, taskListElement.firstChild);
     });
 }
 
@@ -51,6 +53,14 @@ window.addTask = function () {
 // Функция для удаления задачи
 window.removeTask = function (id) {
     App.RemoveTask(id)
+        .then(() => App.GetTasks())
+        .then(renderTasks)
+        .catch((err) => console.error(err));
+};
+
+// Функция для переключения состояния выполнения задачи
+window.toggleTaskCompleted = function (id) {
+    App.ToggleTaskCompleted(id)
         .then(() => App.GetTasks())
         .then(renderTasks)
         .catch((err) => console.error(err));

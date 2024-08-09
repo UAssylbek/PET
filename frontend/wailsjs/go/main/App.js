@@ -21,3 +21,7 @@ export function RemoveTask(arg1) {
 export function Startup(arg1) {
   return window['go']['main']['App']['Startup'](arg1);
 }
+
+export function ToggleTaskCompleted(arg1) {
+  return window['go']['main']['App']['ToggleTaskCompleted'](arg1);
+}

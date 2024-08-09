@@ -12,3 +12,5 @@ export function Greet(arg1:string):Promise<string>;
 export function RemoveTask(arg1:number):Promise<void>;
 
 export function Startup(arg1:context.Context):Promise<void>;
+
+export function ToggleTaskCompleted(arg1:number):Promise<void>;

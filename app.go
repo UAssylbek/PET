@@ -9,10 +9,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Task представляет задачу с текстом и ID
+// Task представляет задачу с текстом, ID и статусом выполнения
 type Task struct {
-	ID   int    `json:"id"`
-	Task string `json:"task"`
+	ID        int    `json:"id"`
+	Task      string `json:"task"`
+	Completed bool   `json:"completed"`
 }
 
 // App struct
@@ -30,7 +31,7 @@ func NewApp() *App {
 	}
 
 	// Создаем таблицу, если ее нет
-	sqlStmt := `CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT);`
+	sqlStmt := `CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, completed BOOLEAN DEFAULT 0);`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +60,7 @@ func (a *App) AddTask(task string) {
 
 // GetTasks возвращает все задачи из базы данных
 func (a *App) GetTasks() []Task {
-	rows, err := a.db.Query("SELECT id, task FROM tasks")
+	rows, err := a.db.Query("SELECT id, task, completed FROM tasks")
 	if err != nil {
 		log.Println("Ошибка при получении задач:", err)
 		return nil
@@ -69,7 +70,7 @@ func (a *App) GetTasks() []Task {
 	var tasks []Task
 	for rows.Next() {
 		var task Task
-		if err := rows.Scan(&task.ID, &task.Task); err != nil {
+		if err := rows.Scan(&task.ID, &task.Task, &task.Completed); err != nil {
 			log.Println("Ошибка при чтении задачи:", err)
 		}
 		tasks = append(tasks, task)
@@ -82,6 +83,14 @@ func (a *App) RemoveTask(id int) {
 	_, err := a.db.Exec("DELETE FROM tasks WHERE id = ?", id)
 	if err != nil {
 		log.Println("Ошибка при удалении задачи:", err)
+	}
+}
+
+// ToggleTaskCompleted переключает статус выполнения задачи
+func (a *App) ToggleTaskCompleted(id int) {
+	_, err := a.db.Exec("UPDATE tasks SET completed = NOT completed WHERE id = ?", id)
+	if err != nil {
+		log.Println("Ошибка при изменении статуса задачи:", err)
 	}
 }
 
