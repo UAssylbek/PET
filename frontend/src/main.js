@@ -5,7 +5,7 @@ import * as App from '../wailsjs/go/main/App';
 import { AddTask, GetTasks, RemoveTask } from '../wailsjs/go/main/App';
 
 document.querySelector('#app').innerHTML = `
-<h1 class="todo-title">To-Do List</h1> <!-- Добавлен заголовок -->
+<h1 class="todo-title">To-Do List</h1>
     <div class="todo-container">
         <div class="todo-header">
             <input class="input" id="taskInput" type="text" placeholder="Введите задачу..." autocomplete="off" />
@@ -15,7 +15,6 @@ document.querySelector('#app').innerHTML = `
     </div>
 `;
 
-
 let taskInputElement = document.getElementById("taskInput");
 taskInputElement.focus();
 let taskListElement = document.getElementById("taskList");
@@ -23,24 +22,16 @@ let taskListElement = document.getElementById("taskList");
 // Функция для отображения задач
 function renderTasks(tasks) {
     taskListElement.innerHTML = ''; // Очищаем список задач
-    tasks.forEach((task, index) => {
+    tasks.forEach((task) => {
         let taskItem = document.createElement('li');
         taskItem.className = 'todo-item';
         taskItem.innerHTML = `
-            ${task}
-            <button class="btn-remove" onclick="removeTask(${index})">Удалить</button>
+            ${task.task}
+            <button class="btn-remove" onclick="removeTask(${task.id})">Удалить</button>
         `;
         taskListElement.appendChild(taskItem);
     });
 }
-
-
-window.toggleTaskCompleted = function(index) {
-    App.ToggleTaskCompleted(index)
-        .then(App.GetTasks)
-        .then(renderTasks)
-        .catch(err => console.error(err));
-};
 
 // Функция для добавления новой задачи
 window.addTask = function () {
@@ -48,10 +39,7 @@ window.addTask = function () {
     if (task === "") return;
 
     App.AddTask(task)
-        .then((result) => {
-            console.log(result); // Проверяем, что возвращает функция
-            return App.GetTasks();
-        })
+        .then(() => App.GetTasks())
         .then(renderTasks)
         .then(() => {
             taskInputElement.value = '';
@@ -60,18 +48,15 @@ window.addTask = function () {
         .catch((err) => console.error(err));
 };
 
-
 // Функция для удаления задачи
-window.removeTask = function (index) {
-    RemoveTask(index)
-        .then(GetTasks)
+window.removeTask = function (id) {
+    App.RemoveTask(id)
+        .then(() => App.GetTasks())
         .then(renderTasks)
         .catch((err) => console.error(err));
 };
 
+// Получаем и отображаем задачи при загрузке страницы
 App.GetTasks()
-    .then((tasks) => {
-        console.log("Tasks:", tasks); // Проверяем, что возвращает функция
-        renderTasks(tasks);
-    })
+    .then(renderTasks)
     .catch((err) => console.error(err));
