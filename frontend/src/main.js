@@ -15,6 +15,27 @@ document.querySelector('#app').innerHTML = `
     </div>
 `;
 
+// Функция для отображения модального окна с ошибкой
+function showErrorModal(message) {
+    document.getElementById('errorMessage').innerText = message;
+    document.getElementById('errorModal').style.display = 'block';
+}
+
+// Функция для закрытия модального окна
+function closeErrorModal() {
+    document.getElementById('errorModal').style.display = 'none';
+}
+
+window.closeErrorModal = closeErrorModal;
+
+// Закрытие модального окна при клике вне его области
+window.onclick = function(event) {
+    if (event.target === document.getElementById('errorModal')) {
+        closeErrorModal();
+    }
+}
+
+
 let taskInputElement = document.getElementById("taskInput");
 taskInputElement.focus();
 let taskListElement = document.getElementById("taskList");
@@ -37,18 +58,28 @@ function renderTasks(tasks) {
 
 // Функция для добавления новой задачи
 window.addTask = function () {
-    let task = taskInputElement.value.trim();
-    if (task === "") return;
+    let task = taskInputElement.value.trim(); // Удаляем лишние пробелы
 
+    // Валидация: проверка на пустой ввод
+    if (task === "") {
+        showErrorModal("Невозможно добавить пустую задачу."); // Показываем модальное окно с ошибкой
+        return; // Не добавляем пустую задачу
+    }
+
+    // Добавляем задачу
     App.AddTask(task)
         .then(() => App.GetTasks())
         .then(renderTasks)
         .then(() => {
-            taskInputElement.value = '';
-            taskInputElement.focus();
+            taskInputElement.value = ''; // Очищаем поле ввода
+            taskInputElement.focus();    // Фокусируемся на поле ввода
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+            console.error(err);
+            showErrorModal("Произошла ошибка при добавлении задачи."); // Показываем модальное окно с ошибкой
+        });
 };
+
 
 // Функция для удаления задачи
 window.removeTask = function (id) {
@@ -70,3 +101,6 @@ window.toggleTaskCompleted = function (id) {
 App.GetTasks()
     .then(renderTasks)
     .catch((err) => console.error(err));
+
+
+
