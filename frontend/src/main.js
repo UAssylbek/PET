@@ -55,7 +55,9 @@ function renderTasks(tasks) {
         taskListElement.insertBefore(taskItem, taskListElement.firstChild);
     });
 }
-
+window.removeTask = function (taskId) {
+    removeTaskWithConfirmation(taskId);
+};
 // Функция для добавления новой задачи
 window.addTask = function () {
     let task = taskInputElement.value.trim(); // Удаляем лишние пробелы
@@ -81,13 +83,14 @@ window.addTask = function () {
 };
 
 
-// Функция для удаления задачи
-window.removeTask = function (id) {
-    App.RemoveTask(id)
-        .then(() => App.GetTasks())
-        .then(renderTasks)
-        .catch((err) => console.error(err));
-};
+export function removeTaskWithConfirmation(taskId) {
+    showConfirmModal("Вы уверены, что хотите удалить эту задачу?", () => {
+        // Замените `App.RemoveTask` на вашу функцию удаления
+        App.RemoveTask(taskId)
+            .then(() => App.GetTasks())
+            .then(renderTasks)
+    });
+}
 
 // Функция для переключения состояния выполнения задачи
 window.toggleTaskCompleted = function (id) {
@@ -103,4 +106,32 @@ App.GetTasks()
     .catch((err) => console.error(err));
 
 
+// Функция для отображения модального окна подтверждения
+export function showConfirmModal(message, confirmCallback) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('confirmButton').onclick = () => {
+        confirmCallback();
+        closeConfirmModal();
+    };
+    document.getElementById('cancelButton').onclick = closeConfirmModal;
+    document.getElementById('confirmModal').style.display = 'block';
+}
 
+// Функция для закрытия модального окна подтверждения
+export function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+window.closeConfirmModal = closeConfirmModal;
+
+// Обработчики событий для кнопок
+document.addEventListener('DOMContentLoaded', () => {
+    const closeErrorButton = document.querySelector('#errorModal .close');
+    if (closeErrorButton) {
+        closeErrorButton.addEventListener('click', closeErrorModal);
+    }
+
+    const closeConfirmButton = document.querySelector('#confirmModal .close');
+    if (closeConfirmButton) {
+        closeConfirmButton.addEventListener('click', closeConfirmModal);
+    }
+});
